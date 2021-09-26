@@ -1,0 +1,254 @@
+﻿<link href="~/css/jquery.dataTables.css" rel="stylesheet" />
+<link href="~/css/jquery.dataTables.min.css" rel="stylesheet" />
+<div class="jumbotron">
+    <h1>Simple Web Form (Employee)</h1>
+</div>
+<div class="row">
+    <form>
+        <h3>Employee Personal Details</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> Name <span style="color:red">*</span></label>
+                    <input class="form-control" id="name" placeholder="Name" type="text" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> Age <span style="color:red">*</span></label>
+                    <input class="form-control" id="age" placeholder="Age" type="text" onkeypress="isNumeric(event);" required>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> Gender <span style="color:red">*</span></label>
+                    <select name="gender" id="gender" class="form-control" required>
+                        <option selected value="">Please Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> Address <span style="color:red">*</span></label>
+                    <textarea class="form-control" id="address" placeholder="Address" rows="3" required></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> City <span style="color:red">*</span></label>
+                    <input class="form-control" id="city" placeholder="City" type="text" required>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> State <span style="color:red">*</span></label>
+                    <input class="form-control" id="state" placeholder="State" type="text" required>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for=""> Country <span style="color:red">*</span></label>
+                    <input class="form-control" id="country" placeholder="Country" type="text" required>
+                </div>
+            </div>
+        </div>
+        <div id="expD" style="display:none">
+            <h3>Employee Experience Details</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="">Total Experience <span style="color:red">*</span></label>
+                        <input class="form-control" id="totalExp" placeholder="Total Experience" type="text">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for=""> Prev. Company Name <span style="color:red">*</span></label>
+                        <input class="form-control" id="prevCompany" placeholder="Prev. Company Name" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="">Designation <span style="color:red">*</span></label>
+                        <input class="form-control" id="designation" placeholder="Designation" type="text">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-buttons-w text-left">
+            <input class="btn btn-primary" type="submit" value="Submit" id="btnSubmit" />
+            <button class="btn btn-primary" type="button" id="addNewD">Add Few Details</button>
+        </div>
+    </form>
+</div>
+<div class="table-responsive">
+    <table id="dataTable1" class="table table-padded">
+        <thead>
+            <tr>
+                <th>SNo</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+                <th>Experience</th>
+                <th>Prev. Company</th>
+                <th>Designation</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script src="~/Scripts/jquery.js"></script>
+<script src="~/Scripts/jquery.dataTables.js" type="text/javascript"></script>
+<script src="~/Scripts/jquery.dataTables.min.js" type="text/javascript" charset=""></script>
+<script>
+    var employeeId = "";
+    $(document).ready(function () {
+        $('#dataTable1').DataTable();
+        $.ajax({
+            type: 'POST',
+            url: '../api/general/GetEmployeeDetails',
+            success: function (data) {
+                if (data.tableList != undefined) {
+                    var mastersList = data.tableList;
+                    if (mastersList != null) {
+                        for (i = 0; i < mastersList.length; i++) {
+                            var sno = i + 1;
+                            var EditIcon = '<button class="form-control" data-id="' + mastersList[i].ID + '" onclick="EditDetails(this);">Edit</button>';
+                            var DeleteIcon = '<button class="form-control" data-id="' + mastersList[i].ID + '" onclick="DeleteDetails(this);">Delete</button>';
+                            var actionCol = EditIcon + "&nbsp;" + DeleteIcon;
+                            $('#dataTable1').DataTable().row.add([sno, mastersList[i].Name, mastersList[i].Age, mastersList[i].Gender, mastersList[i].Address, mastersList[i].City, mastersList[i].State, mastersList[i].Country, mastersList[i].Experience, mastersList[i].PreviousCompany, mastersList[i].Designation, actionCol]).draw();
+
+                        }
+                    }
+                }
+                else {
+                    alert(data.msg);
+                }
+            }
+        });
+    });
+    $("form").on("submit", function (e) {
+        e.preventDefault();
+        var name = $("#name").val();
+        var age = $("#age").val();
+        var gender = $("#gender").val();
+        var address = $("#address").val();
+        var city = $("#city").val();
+        var state = $("#state").val();
+        var country = $("#country").val();
+        var totalExp = $("#totalExp").val();
+        var prevCompany = $("#prevCompany").val();
+        var designation = $("#designation").val();
+        var data = new FormData();
+        data.append("name", name);
+        data.append("age", age);
+        data.append("gender", gender);
+        data.append("address", address);
+        data.append("city", city);
+        data.append("state", state);
+        data.append("country", country);
+        data.append("totalExp", totalExp);
+        data.append("prevCompany", prevCompany);
+        data.append("designation", designation);
+        data.append("employeeID", employeeId);
+        $.ajax({
+            type: 'POST',
+            url: '../api/general/AddorUpdateEmployeeDetails',
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function (data) {
+                if (data.success == true) {
+                    if (data.msg != undefined) {
+                        alert(data.msg);
+                        location.reload();
+                    }
+                }
+                else {
+                    if (data.msg != undefined) {
+                        alert(data.msg);
+                    }
+                }
+            }
+        });
+    });
+    $("#addNewD").click(function () {
+        $("#expD").show();
+        $("#totalExp").attr("required", true);
+        $("#prevCompany").attr("required", true);
+        $("#designation").attr("required", true);
+    });
+    function EditDetails(val) {
+        employeeId = $(val).attr("data-id");
+        $.ajax({
+            type: 'POST',
+            url: '../api/general/GetEmployeeDetailsByID?id=' + employeeId,
+            success: function (data) {
+                if (data.employeeMaster != undefined) {
+                    var employee = data.employeeMaster;
+                    $("#name").val(employee.Name).change();
+                    $("#age").val(employee.Age).change();
+                    $("#gender").val(employee.Gender).change();
+                    $("#address").val(employee.Address).change();
+                    $("#city").val(employee.City).change();
+                    $("#state").val(employee.State).change();
+                    $("#country").val(employee.Country).change();
+                    $("#totalExp").val(employee.Experience).change();
+                    $("#prevCompany").val(employee.PreviousCompany).change();
+                    $("#designation").val(employee.Designation).change();
+                    $("#btnSubmit").val("Update").change();
+                    if (employee.Experience != "" || employee.PreviousCompany != "" || employee.Designation != "") {
+                        $("#expD").show();
+                        $("#totalExp").attr("required", true);
+                        $("#prevCompany").attr("required", true);
+                        $("#designation").attr("required", true);
+                    }
+                    else {
+                        $("#expD").hide();
+                        $("#totalExp").attr("required", false);
+                        $("#prevCompany").attr("required", false);
+                        $("#designation").attr("required", false);
+                    }
+                }
+            }
+        });
+    }
+    function DeleteDetails(val) {
+        employeeId = $(val).attr("data-id");
+        $.ajax({
+            type: 'POST',
+            url: '../api/general/DeleteEmployeeDetailsByID?id=' + employeeId,
+            success: function (data) {
+                if (data.success == true) {
+                    if (data.msg != undefined) {
+                        alert(data.msg);
+                        location.reload();
+                    }
+                }
+                else {
+                    if (data.msg != undefined) {
+                        alert(data.msg);
+                    }
+                }
+            }
+        });
+    }
+</script>
